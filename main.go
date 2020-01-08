@@ -68,31 +68,34 @@ func getEtlLogFiles(w http.ResponseWriter, req *http.Request) {
 			strHTML += "</ul>"
 		}
 	*/
-	strHTML += "<h3>Plik: " + filepath.Base(matches[0]) + "</h3>"
-	strHTML += "<div>"
-	if len(matches) != 0 {
-		file, err := os.Open(matches[0])
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
-		// b, _ := ioutil.ReadAll(file)
-		// s := fmt.Sprintf("%s", b)
 
-		sc := bufio.NewScanner(file)
-		for sc.Scan() {
-			strHTML += "<br/>" + sc.Text()
-			// io.WriteString(w, "<br/>"+sc.Text())
+	if len(matches) != 0 {
+		for _, f := range matches {
+			strHTML += "<h3>Plik: " + filepath.Base(f) + "</h3>"
+			strHTML += "<div>"
+			file, err := os.Open(f)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+			// b, _ := ioutil.ReadAll(file)
+			// s := fmt.Sprintf("%s", b)
+
+			sc := bufio.NewScanner(file)
+			for sc.Scan() {
+				strHTML += "<br/>" + sc.Text()
+				// io.WriteString(w, "<br/>"+sc.Text())
+			}
+			strHTML += "<br/><br/><br/>"
+			strHTML += "</div>"
+
+			if err := sc.Err(); err != nil {
+				log.Fatalf("scan file error: %v", err)
+				return
+			}
 		}
-		strHTML += "<br/><br/><br/>"
-		strHTML += "</div>"
 
 		io.WriteString(w, strHTML)
-
-		if err := sc.Err(); err != nil {
-			log.Fatalf("scan file error: %v", err)
-			return
-		}
 
 		// io.WriteString(w, s)
 	}
