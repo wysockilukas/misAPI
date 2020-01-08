@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"io"
 	"log"
 	"net/http"
@@ -49,26 +50,51 @@ func index(w http.ResponseWriter, req *http.Request) {
 
 func getEtlLogFiles(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	param := req.FormValue("q")
-	matches, err := filepath.Glob(`d:\tymczasowy\2020\01\2020-01-03\fastExportLogFile_1578044073686_pid_142_iid_772_lid_51238.txt`)
+	itemID := req.FormValue("itemid")
+	logID := req.FormValue("logid")
+	// matches, err := filepath.Glob(`d:\tymczasowy\2020\01\2020-01-03\*` + itemID + `_lid_` + logID + `.txt`)
+	matches, err := filepath.Glob(`/home/oracle/Octago_app/commands_log/*` + itemID + `_lid_` + logID + `.txt`)
 	if err != nil {
 		io.WriteString(w, `<h1>Nie znaleziono pliku</h1>`)
 	}
-	header := req.Header
+	// header := req.Header
 	strHTML := ""
-	for k, v := range header {
-		strHTML += k + "<ul>"
-		for _, e := range v {
-			strHTML += "<li>" + e + "</li>"
+	/*
+		for k, v := range header {
+			strHTML += k + "<ul>"
+			for _, e := range v {
+				strHTML += "<li>" + e + "</li>"
+			}
+			strHTML += "</ul>"
 		}
-		strHTML += "</ul>"
-	}
-
-	io.WriteString(w, `<h1>strona glowna</h1>`)
-	io.WriteString(w, param)
-	io.WriteString(w, strHTML)
+	*/
+	strHTML += "<h3>Plik: " + filepath.Base(matches[0]) + "</h3>"
+	strHTML += "<div>"
 	if len(matches) != 0 {
-		io.WriteString(w, "<h1>"+matches[0]+"</h1>")
+		file, err := os.Open(matches[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		// b, _ := ioutil.ReadAll(file)
+		// s := fmt.Sprintf("%s", b)
+
+		sc := bufio.NewScanner(file)
+		for sc.Scan() {
+			strHTML += "<br/>" + sc.Text()
+			// io.WriteString(w, "<br/>"+sc.Text())
+		}
+		strHTML += "<br/><br/><br/>"
+		strHTML += "</div>"
+
+		io.WriteString(w, strHTML)
+
+		if err := sc.Err(); err != nil {
+			log.Fatalf("scan file error: %v", err)
+			return
+		}
+
+		// io.WriteString(w, s)
 	}
 
 }
