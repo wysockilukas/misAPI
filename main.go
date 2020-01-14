@@ -102,16 +102,24 @@ func getEtlLogFiles(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func startWebServer() {
+func getEtlAppLog(w http.ResponseWriter, req *http.Request) {
+	ff, _ := os.Open("/home/oracle/Octago_app/application_log/Octago.log")
+	w.Header().Set("Content-Disposition", "attachment; filename=log_pijawki.txt")
+	w.Header().Set("Content-Type", req.Header.Get("Content-Type"))
+	w.Header().Set("Content-Length", req.Header.Get("Content-Length"))
+	io.Copy(w, ff)
+}
 
+func startWebServer() {
 	//  http.Handle("/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/tw", runScriptHandler)
 	http.HandleFunc("/", index)
 	http.HandleFunc("/etllogs", getEtlLogFiles)
+	http.HandleFunc("/etlapplog", getEtlAppLog)
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.ListenAndServe(":8000", nil)
-
 }
+
 
 func main() {
 	startWebServer()
