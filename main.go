@@ -56,6 +56,7 @@ func getEtlLogFiles(w http.ResponseWriter, req *http.Request) {
 	matches, err := filepath.Glob(`/home/oracle/Octago_app/commands_log/*` + itemID + `_lid_` + logID + `.txt`)
 	if err != nil {
 		io.WriteString(w, `<h1>Nie znaleziono pliku</h1>`)
+		return
 	}
 	// header := req.Header
 	strHTML := ""
@@ -98,16 +99,25 @@ func getEtlLogFiles(w http.ResponseWriter, req *http.Request) {
 		io.WriteString(w, strHTML)
 
 		// io.WriteString(w, s)
+	} else {
+		io.WriteString(w, `<h1>Nie znaleziono pliku</h1>`)
 	}
 
 }
 
 func getEtlAppLog(w http.ResponseWriter, req *http.Request) {
-	ff, _ := os.Open("/home/oracle/Octago_app/application_log/Octago.log")
+	ff, err := os.Open("/home/oracle/Octago_app/application_log/Octago.log")
+	// ff, err := os.Open(`d:\tymczasowy\2020\01\2020-01-13\Octago.log`)
+	if err != nil {
+		io.WriteString(w, `<h1>Nie znaleziono pliku</h1>`)
+		return
+	}
+	defer ff.Close()
 	w.Header().Set("Content-Disposition", "attachment; filename=log_pijawki.txt")
 	w.Header().Set("Content-Type", req.Header.Get("Content-Type"))
 	w.Header().Set("Content-Length", req.Header.Get("Content-Length"))
 	io.Copy(w, ff)
+
 }
 
 func startWebServer() {
@@ -119,7 +129,6 @@ func startWebServer() {
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.ListenAndServe(":8000", nil)
 }
-
 
 func main() {
 	startWebServer()
