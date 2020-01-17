@@ -114,6 +114,7 @@ func getEtlAppLog(w http.ResponseWriter, req *http.Request) {
 	}
 	defer ff.Close()
 	w.Header().Set("Content-Disposition", "attachment; filename=log_pijawki.txt")
+	w.Header().Set("Content-Security-Policy", "frame-src: 'https://mis.centrala.bzwbk/'")
 	w.Header().Set("Content-Type", req.Header.Get("Content-Type"))
 	w.Header().Set("Content-Length", req.Header.Get("Content-Length"))
 	io.Copy(w, ff)
